@@ -28,9 +28,7 @@ def relu(x):
     ### TODO:
     ###     Compute the ReLU function: ReLU(z) = max(z, 0).
     ###     Be sure to take advantage of Numpy universal functions!
-
-
-
+    y = np.maximum(x, 0)
     ### END YOUR CODE
     return y
 
@@ -64,9 +62,12 @@ class ParserModel():
         ###            1st hidden layer: [-0.05, 0.05]
         ###            2nd hidden layer: [-0.1, 0.1]
         ###            Output layer: [-0.1, 0.1]
-
-
-
+        self.w1 = (np.random.random((self.embed_size * self.n_features, self.hidden_size // 2)) - 0.5) / 10
+        self.w2 = (np.random.random((self.hidden_size // 2, self.hidden_size // 2)) - 0.5) / 5
+        self.u = (np.random.random((self.hidden_size // 2, self.n_classes)) - 0.5) / 5
+        self.b1 = np.random.random(self.hidden_size // 2)
+        self.b2 = np.random.random(self.hidden_size // 2)
+        self.b3 = np.random.random(self.n_classes)
         ### END YOUR CODE
 
     def embedding_lookup(self, w):
@@ -88,9 +89,9 @@ class ParserModel():
         ###
         ###       Pay attention to tensor shapes and reshape if necessary.
         ###       Make sure you know each tensor's shape before you run the code!
-
-
-
+        x = np.zeros((w.shape[0], self.embed_size * self.n_features))
+        for i in range(w.shape[0]):
+            x[i] = self.embeddings[w[i], :].flatten()
         ### END YOUR CODE
         return x
 
@@ -108,9 +109,18 @@ class ParserModel():
         ### YOUR CODE HERE (~11 Lines)
         ### TODO:
         ###     Complete the forward computation as described in write-up.
-
-
-
+        outputs = []
+        x = self.embedding_lookup(w)
+        outputs.append(x)
+        z1 = np.dot(x, self.w1) + self.b1
+        y1 = relu(z1)
+        outputs.append(y1)
+        z2 = np.dot(y1, self.w2) + self.b2
+        y2 = relu(z2)
+        outputs.append(y2)
+        z3 = np.dot(y2, self.u) + self.b3
+        y3 = softmax(z3)
+        outputs.append(y3)
         ### END YOUR CODE
         return outputs
 

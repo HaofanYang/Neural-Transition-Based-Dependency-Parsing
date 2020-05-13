@@ -36,9 +36,7 @@ def d_relu(x):
     ###     Compute the derivative of the ReLU function.
     ###     Be sure to take advantage of Numpy universal functions!
     ###     Note that by convention, we take the derivative of ReLU(z) at z = 0 to be 0.
-
-
-
+    y = (x > 0) * 1
     ### END YOUR CODE
     return y
 
@@ -85,9 +83,23 @@ def train_for_epoch(parser, train_data, dev_data, batch_size):
         ###      2) Calculate the cross-entropy loss
         ###      3) Backprop losses
         ###      4) Update the model weights
-
-
-
+        model = parser.model
+        outputs = model.forward(train_x)
+        predicted_y = outputs[-1]
+        loss = np.sum(train_y * np.log(predicted_y) * -1, axis = 1).mean()
+        ###     derivative matrix of the output layer
+        delta_out = predicted_y - train_y
+        derivative_out = np.dot(outputs[2].T, delta_out)
+        ###     derivative matrix of the 2nd hidden layer
+        delta_2 = np.dot(delta_out, model.u.T) * d_relu(outputs[2])
+        derivative_2 = np.dot(outputs[1].T, delta_2)
+        ###     derivative matrix of the 1st hidden layer
+        delta_1 = np.dot(delta_2, model.w2.T) * d_relu(outputs[1])
+        derivative_1 = np.dot(outputs[0].T, delta_1)
+        ###     update weights in all layers
+        model.u = model.u - model.lr * derivative_out
+        model.w2 = model.w2 - model.lr * derivative_2
+        model.w1 = model.w1 - model.lr * derivative_1
         ### END YOUR CODE
         loss_meter.update(loss)
 
